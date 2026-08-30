@@ -1,41 +1,38 @@
 # Where is Kika? — Phaser + Capacitor
 
-Primera versión jugable del concepto del mockup.
+Versión visual mejorada inspirada en el mockup: interfaz colorida, estilo casual mobile, escenarios, selector de niveles, tienda y juego de buscar a Kika.
 
-## Incluye
-- Menú principal estilo mockup
-- Selector de 30 niveles
-- Juego de buscar a Kika entre muchos objetos
-- Dificultad progresiva
-- Temporizador
-- 3 ayudas: lupa, iluminación y +15 segundos
-- Monedas, tienda, estrellas y récords
-- Progreso guardado en localStorage
-- Configuración base de Capacitor para iOS/Android
-
-## Ejecutar en navegador
+## Probar localmente
 ```bash
 npm install
 npm run dev
 ```
 
-## Compilar web
+## Subir a GitHub + Vercel
+1. Sube **todo el contenido de esta carpeta** al repositorio.
+2. En Vercel importa el repositorio.
+3. Framework Preset: **Vite** (normalmente se detecta solo).
+4. Build Command: `npm run build`
+5. Output Directory: `dist`
+6. Deploy.
+
+## Capacitor
 ```bash
 npm run build
-```
-
-## Preparar iOS y Android por primera vez
-```bash
 npx cap add ios
 npx cap add android
 npm run cap:sync
 ```
 
-Después:
-```bash
-npm run cap:ios
-npm run cap:android
-```
-
-## Próxima fase recomendada
-Reemplazar los objetos emoji por assets ilustrados propios y usar una imagen/ilustración definitiva de Kika, además de añadir sonidos, animaciones, más escenarios y monetización opcional.
+## Incluye
+- Menú principal estilo mockup
+- Kika ilustrada como asset SVG
+- Pantalla de escenarios
+- 30 niveles
+- Tablero con muchos stickers/objetos
+- Dificultad progresiva
+- Temporizador y 3 ayudas
+- Pantalla de victoria con 1–3 estrellas
+- Monedas, tienda y récords
+- Progreso guardado en localStorage
+- Base preparada para iOS/Android con Capacitor
