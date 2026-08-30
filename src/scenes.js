@@ -9,7 +9,7 @@ function starsText(scene,x,y,stars,size=18,depth=20){return scene.add.text(x,y,'
 export class BootScene extends Phaser.Scene{
   constructor(){super('Boot')}
   preload(){
-    this.load.image('menu-room','/assets/levels/sala-base.webp');
+    this.load.image('menu-room','/assets/levels/menu-premium.webp');
     this.load.image('kika-portrait','/assets/kika-portrait.webp');
     LEVELS.slice(0,6).forEach(l=>{if(!this.textures.exists(l.key))this.load.image(l.key,l.image)});
   }
@@ -25,8 +25,8 @@ export class MenuScene extends Phaser.Scene{
     const topFade=this.add.graphics().setDepth(2);topFade.fillGradientStyle(0x1b110b,0x1b110b,0x1b110b,0x1b110b,.72,.72,0,0);topFade.fillRect(0,0,430,300);
     vignette(this,500,932,3,.86);
     coinBadge(this,360,45,this.save.coins,12,true);
-    drawLogo(this,215,116,.88,13);
-    this.add.text(215,205,'EL JUEGO DE ENCONTRAR A KIKA',{fontFamily:'Arial Black',fontSize:'11px',color:'#ffe0a5',letterSpacing:1}).setOrigin(.5).setDepth(16);
+    drawLogo(this,215,126,.98,13);
+    this.add.text(215,218,'BUSCA • DESCUBRE • ENCUENTRA',{fontFamily:'Arial Black',fontSize:'11px',color:'#ffe0a5',letterSpacing:1}).setOrigin(.5).setDepth(16);
 
     // No floating dog sticker: the dog remains naturally integrated in the illustrated room.
     panel(this,215,638,386,248,{fill:0x24170f,alpha:.84,depth:10,r:30,stroke:0xffd494,strokeAlpha:.18,shadow:.35});
@@ -82,24 +82,47 @@ export class LevelScene extends Phaser.Scene{
 export class GameScene extends Phaser.Scene{
   constructor(){super('Game')}
   init(data){this.level=data.level||1}
-  create(){this.save=loadSave();this.found=false;this.levelData=getLevel(this.level);this.timeLeft=this.levelData.time;this.sceneTop=98;this.sceneBottom=808;this.sceneH=this.sceneBottom-this.sceneTop;const key=this.levelData.key;if(!this.textures.exists(key)){this.load.once(Phaser.Loader.Events.COMPLETE,()=>this.buildLevel(key));this.load.image(key,this.levelData.image);this.load.start()}else this.buildLevel(key);}
+  create(){this.save=loadSave();this.found=false;this.levelData=getLevel(this.level);this.timeLeft=this.levelData.time;this.sceneTop=0;this.sceneBottom=932;this.sceneH=this.sceneBottom-this.sceneTop;const key=this.levelData.key;if(!this.textures.exists(key)){this.load.once(Phaser.Loader.Events.COMPLETE,()=>this.buildLevel(key));this.load.image(key,this.levelData.image);this.load.start()}else this.buildLevel(key);}
   buildLevel(key){
     this.cameras.main.setBackgroundColor('#1c120c');this.levelArt=this.add.image(215,this.sceneTop+this.sceneH/2,key).setDisplaySize(430,this.sceneH).setDepth(1);
-    const frame=this.add.graphics().setDepth(3);frame.lineStyle(3,0x402718,.65);frame.lineBetween(0,this.sceneTop,430,this.sceneTop);frame.lineBetween(0,this.sceneBottom,430,this.sceneBottom);
+    const frame=this.add.graphics().setDepth(3);
     this.drawHud();this.drawBottomBar();this.playZone=this.add.zone(215,this.sceneTop+this.sceneH/2,430,this.sceneH).setInteractive({useHandCursor:true}).setDepth(25).on('pointerup',p=>this.checkTap(p.x,p.y));
     this.countdown=this.time.addEvent({delay:1000,loop:true,callback:()=>{if(this.found)return;this.timeLeft--;this.timerText.setText(this.formatTime(this.timeLeft));if(this.timeLeft<=10)this.timerText.setColor('#ff9c80');if(this.timeLeft<=0)this.onLose();}});
   }
   drawHud(){
-    const g=this.add.graphics().setDepth(40);g.fillGradientStyle(0x2a1c14,0x2a1c14,0x4b3020,0x4b3020,1,1,1,1);g.fillRect(0,0,430,98);g.lineStyle(2,0xffd89b,.22);g.lineBetween(0,97,430,97);
-    const pause=this.add.circle(38,43,23,0xbc8449).setStrokeStyle(2,0xffe4b9,.6).setDepth(42).setInteractive({useHandCursor:true});icon(this,'pause',38,43,17,0x442917,43);pause.on('pointerup',()=>this.scene.start('Menu'));
-    panel(this,215,40,112,40,{fill:0x2c1d15,alpha:.88,depth:41,r:16,stroke:0xffd08b,strokeAlpha:.18,shadow:.14,shine:.05});this.timerText=this.add.text(215,40,this.formatTime(this.timeLeft),{fontFamily:'Arial Black',fontSize:'18px',color:'#fff6e5'}).setOrigin(.5).setDepth(45);icon(this,'clock',177,40,15,0xffd26b,45);
-    panel(this,367,40,105,40,{fill:0x2c1d15,alpha:.88,depth:41,r:16,stroke:0xffd08b,strokeAlpha:.18,shadow:.14,shine:.05});this.add.text(367,40,`Nivel ${this.level}`,{fontFamily:'Arial Black',fontSize:'13px',color:'#fff7ea'}).setOrigin(.5).setDepth(45);
-    this.add.text(215,78,'ENCUENTRA A KIKA',{fontFamily:'Arial Black',fontSize:'12px',color:'#ffd981',letterSpacing:1}).setOrigin(.5).setDepth(45);
+    const glass=(x,y,w,h,r=18)=>{
+      const g=this.add.graphics().setDepth(40);
+      g.fillStyle(0x1c120c,.78);g.fillRoundedRect(x-w/2,y-h/2,w,h,r);
+      g.lineStyle(2,0xffe0ae,.40);g.strokeRoundedRect(x-w/2,y-h/2,w,h,r);
+      g.fillStyle(0xffffff,.07);g.fillRoundedRect(x-w/2+4,y-h/2+4,w-8,Math.max(8,h*.22),Math.max(6,r-5));
+      return g;
+    };
+    glass(39,48,52,52,19);
+    const pause=this.add.zone(39,48,52,52).setInteractive({useHandCursor:true}).setDepth(45);
+    icon(this,'pause',39,48,18,0xfff3dc,46);pause.on('pointerup',()=>this.scene.start('Menu'));
+    glass(215,48,116,48,18);
+    icon(this,'clock',180,48,15,0xffc94a,46);
+    this.timerText=this.add.text(224,48,this.formatTime(this.timeLeft),{fontFamily:'Trebuchet MS',fontStyle:'bold',fontSize:'19px',color:'#fff8eb'}).setOrigin(.5).setDepth(46);
+    glass(369,48,102,48,18);
+    this.add.text(369,48,`NIVEL ${this.level}`,{fontFamily:'Trebuchet MS',fontStyle:'bold',fontSize:'13px',color:'#fff8eb'}).setOrigin(.5).setDepth(46);
+    const label=this.add.text(215,91,'ENCUENTRA A KIKA',{fontFamily:'Trebuchet MS',fontStyle:'bold',fontSize:'12px',color:'#fff3cf',stroke:'#2a1609',strokeThickness:4}).setOrigin(.5).setDepth(46);
   }
   drawBottomBar(){
-    const g=this.add.graphics().setDepth(50);g.fillGradientStyle(0x402718,0x402718,0x684226,0x684226,1,1,1,1);g.fillRect(0,808,430,124);g.lineStyle(3,0xffd095,.16);g.lineBetween(0,808,430,808);
-    const defs=[['search',104,'magnifier'],['bulb',215,'bulb'],['clock',326,'clock']];
-    defs.forEach(([type,x,key])=>{const amt=this.save.inventory[key]||0;const sh=this.add.circle(x,868,42,0x000000,.26).setDepth(51);sh.y+=5;const c=this.add.circle(x,868,40,0x1f85bb).setStrokeStyle(3,0x79c9ee,.35).setDepth(52).setInteractive({useHandCursor:true});this.add.circle(x-8,858,24,0xffffff,.06).setDepth(53);icon(this,type,x,868,31,0xffffff,54);this.add.circle(x+29,837,12,C.green).setStrokeStyle(2,0xfff4de,.75).setDepth(55);this.add.text(x+29,837,String(amt),{fontFamily:'Arial Black',fontSize:'11px',color:'#fff'}).setOrigin(.5).setDepth(56);c.on('pointerup',()=>this.usePower(key));});
+    const base=this.add.graphics().setDepth(50);
+    base.fillGradientStyle(0x1c120c,0x1c120c,0x4a2a16,0x4a2a16,.86,.86,.94,.94);
+    base.fillRoundedRect(18,817,394,96,30);
+    base.lineStyle(2,0xffd28a,.26);base.strokeRoundedRect(18,817,394,96,30);
+    const defs=[['search',105,'magnifier'],['bulb',215,'bulb'],['target',325,'clock']];
+    defs.forEach(([type,x,key])=>{
+      const amt=this.save.inventory[key]||0;
+      this.add.circle(x,865,38,0x000000,.34).setDepth(51).setScale(1,1.08).y+=5;
+      this.add.circle(x,865,36,0x1684bd).setStrokeStyle(3,0x92ddff,.72).setDepth(52);
+      this.add.circle(x-8,855,21,0xffffff,.10).setDepth(53);
+      icon(this,type,x,865,29,0xffffff,54);
+      this.add.circle(x+27,837,12,0x5fbd35).setStrokeStyle(2,0xfff3d4,.9).setDepth(55);
+      this.add.text(x+27,837,String(amt),{fontFamily:'Trebuchet MS',fontStyle:'bold',fontSize:'11px',color:'#fff'}).setOrigin(.5).setDepth(56);
+      this.add.zone(x,865,76,76).setInteractive({useHandCursor:true}).setDepth(57).on('pointerup',()=>this.usePower(key));
+    });
   }
   targetPixels(){const t=this.levelData.target;return{x:t.x*430,y:this.sceneTop+t.y*this.sceneH,rx:t.rx*430,ry:t.ry*this.sceneH}}
   checkTap(x,y){if(this.found)return;const t=this.targetPixels(),dx=(x-t.x)/t.rx,dy=(y-t.y)/t.ry;if(dx*dx+dy*dy<=1){this.onFound();return;}const ring=this.add.circle(x,y,13,0xffffff,.02).setStrokeStyle(2,0xffd7a0,.72).setDepth(32);this.tweens.add({targets:ring,scale:1.8,alpha:0,duration:330,onComplete:()=>ring.destroy()});}

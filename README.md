@@ -1,32 +1,19 @@
-# Where is Kika? — Phaser + Capacitor v6
+# Where is Kika? — Premium Pilot
 
-Versión visual renovada del juego móvil de búsqueda de Kika.
+Phaser + Capacitor hidden-object game.
 
-## Cambios v6
-- Menú rediseñado para usar la ilustración completa como protagonista, sin sticker flotante de Kika.
-- Pantallas de escenarios y niveles más cercanas al mockup original.
-- HUD del juego rehecho con barra superior y dock inferior más integrados al arte.
-- Pantalla de victoria usa un retrato recortado desde el arte ilustrado, no el SVG tipo sticker anterior.
-- Botones, paneles, sombras, bordes y navegación rehechos con un lenguaje visual más premium.
-- Mantiene Phaser + Vite + Capacitor y guardado local.
+## Visual update
+- Level 1 now uses a full, dense editorial illustration based on the approved first mockup.
+- Immersive full-screen artwork.
+- Floating glass HUD instead of a generic game header.
+- Premium bottom power-up dock.
+- No dog sticker in the main gameplay interface.
+- Responsive normalized Kika hitbox.
+- Ready for GitHub + Vercel and later Capacitor builds.
 
-## Probar
-```bash
+## Run
 npm install
 npm run dev
-```
 
-## Build web
-```bash
+## Build
 npm run build
-```
-
-## Capacitor
-```bash
-npm run cap:sync
-npx cap add ios
-npx cap add android
-```
-
-## Vercel
-Vercel puede detectar Vite automáticamente. El directorio de salida es `dist`.
