@@ -1,27 +1,32 @@
 # Where is Kika? — Phaser + Capacitor
 
-Hidden-object mobile game prototype built with Phaser 3, Vite and Capacitor.
+Versión visual renovada del juego de búsqueda de Kika.
 
-## New illustrated-level engine
-Levels are now rendered as a single complete illustration (`public/assets/levels/*.webp`) instead of many independent sticker sprites. Kika's location is stored as normalized coordinates in `src/levels.js`, so the hit area adapts to any phone size.
+## Cambios principales de esta actualización
+- Menú principal rehecho con arte del propio juego a pantalla completa.
+- Interfaz más cercana al mockup original: paneles marrón/dorado, botones con volumen, HUD compacto y barra inferior.
+- Se eliminaron los emojis/stickers de la navegación principal y se sustituyeron por iconos vectoriales dibujados en Phaser.
+- Selector de escenarios con preview real de los niveles.
+- Pantalla de niveles completamente rediseñada.
+- HUD del nivel con pausa, reloj y nivel en cápsulas.
+- Botones de pistas rediseñados como controles circulares de juego.
+- Tienda y récords actualizados al mismo lenguaje visual.
+- Los niveles siguen usando ilustraciones completas WebP, no composiciones de stickers.
 
-The project includes six illustrated Sala compositions as the visual prototype. New finished levels only require:
-1. Add a WebP illustration to `public/assets/levels/`.
-2. Add its image path and Kika coordinates in `src/levels.js`.
-
-## Run
+## Ejecutar
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
-```bash
-npm run build
-```
+## Vercel
+Vercel detecta Vite automáticamente. Si pide configuración:
+- Build Command: `npm run build`
+- Output Directory: `dist`
 
 ## Capacitor
 ```bash
+npm run build
 npx cap add ios
 npx cap add android
 npm run cap:sync
