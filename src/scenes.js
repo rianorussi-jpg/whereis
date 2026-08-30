@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {C,roundedButton,topBar,backButton,coinBadge,drawLogo,panel,sceneCard,decorateRoom} from './ui.js';
 import {loadSave,saveGame} from './storage.js';
+import {drawDetailedRoom,populateClutter,addForegroundClutter} from './clutter.js';
 
 const stickerEmojis=['🧸','⚽','🎒','🪴','📷','👟','🧢','🍕','☕','🎧','🕶️','🧃','🎸','🛹','📚','🧩','🚗','🛼','🕹️','🍩','🧁','🪁','🧦','🔦','🧴','👜','🪑','🛋️','🪞','🧺','🎁','🧵','📦','🧯','🧹','🪣','🥎','🏀','🎾','🧲','📻','☎️','🥨','🧢','🌵','🪴','🧤','🧣','👓','🧴','🪥','🎈','🛴','🥁','🧱','🧸','🐻','🐱','🐰','🐼','🦊','🐶'];
 
@@ -73,55 +74,69 @@ export class GameScene extends Phaser.Scene{
   constructor(){super('Game')}
   init(data){this.level=data.level||1}
   create(){
-    this.save=loadSave();this.found=false;this.timeLeft=Math.max(25,92-Math.floor((this.level-1)*1.8));decorateRoom(this,'room');
-    // top HUD
-    const top=this.add.graphics().setDepth(20);top.fillStyle(0x3d291c,.94);top.fillRoundedRect(8,10,414,104,20);top.fillStyle(0xffffff,.06);top.fillRoundedRect(12,14,406,25,15);
-    const pause=this.add.circle(39,43,23,0xd8a75b).setStrokeStyle(2,0xffe0a5).setDepth(21).setInteractive({useHandCursor:true});this.add.text(39,43,'Ⅱ',{fontFamily:'Arial Black',fontSize:'18px',color:'#5a351a'}).setOrigin(.5).setDepth(22);pause.on('pointerup',()=>this.scene.start('Menu'));
-    this.add.text(215,38,`Nivel ${this.level}`,{fontFamily:'Arial Black',fontSize:'19px',color:'#fff'}).setOrigin(.5).setDepth(22);
-    this.timerText=this.add.text(370,40,this.formatTime(this.timeLeft),{fontFamily:'Arial Black',fontSize:'18px',color:'#fff4d6'}).setOrigin(.5).setDepth(22);
-    this.add.text(215,82,'Encuentra a Kika',{fontFamily:'Arial Black',fontSize:'19px',color:'#ffd56b'}).setOrigin(.5).setDepth(22);
-    // board warm veil
-    const veil=this.add.rectangle(215,440,420,630,0xc58d4c,.18).setDepth(1);
-    const count=Math.min(105,48+this.level*2);
-    for(let i=0;i<count;i++) this.spawnSticker(i);
-    this.kikaX=Phaser.Math.Between(55,375);this.kikaY=Phaser.Math.Between(160,720);
-    const s=Math.max(.34,.58-this.level*.006);this.kika=this.add.image(this.kikaX,this.kikaY,'kika').setDisplaySize(180*s,180*s).setDepth(Phaser.Math.Between(4,8)).setInteractive({useHandCursor:true});this.kika.setAngle(Phaser.Math.Between(-18,18));this.kika.on('pointerup',()=>this.onFound());
+    this.save=loadSave(); this.found=false;
+    this.timeLeft=Math.max(28,96-Math.floor((this.level-1)*1.55));
+    drawDetailedRoom(this);
+
+    // HUD superior como el primer mockup
+    const top=this.add.graphics().setDepth(40);top.fillStyle(0x3b291d,.96);top.fillRoundedRect(8,10,414,104,20);top.fillStyle(0xffffff,.07);top.fillRoundedRect(12,14,406,24,15);
+    const pause=this.add.circle(39,43,23,0xd8a75b).setStrokeStyle(2,0xffe0a5).setDepth(41).setInteractive({useHandCursor:true});
+    this.add.text(39,43,'Ⅱ',{fontFamily:'Arial Black',fontSize:'18px',color:'#5a351a'}).setOrigin(.5).setDepth(42);pause.on('pointerup',()=>this.scene.start('Menu'));
+    this.add.text(215,38,`Nivel ${this.level}`,{fontFamily:'Arial Black',fontSize:'19px',color:'#fff'}).setOrigin(.5).setDepth(42);
+    this.timerText=this.add.text(370,40,this.formatTime(this.timeLeft),{fontFamily:'Arial Black',fontSize:'18px',color:'#fff4d6'}).setOrigin(.5).setDepth(42);
+    this.add.text(215,82,'Encuentra a Kika',{fontFamily:'Arial Black',fontSize:'19px',color:'#ffd56b'}).setOrigin(.5).setDepth(42);
+
+    // Cada nivel tiene una composición fija, pero progresivamente más cargada.
+    const count=Math.min(128,52+Math.floor(this.level*2.6));
+    populateClutter(this,{count,seed:this.level*271+17,behindDepthMax:10});
+
+    const rng=new Phaser.Math.RandomDataGenerator([String(this.level*9187+33)]);
+    this.kikaX=rng.integerInRange(48,382); this.kikaY=rng.integerInRange(160,710);
+    const size=Math.max(50,88-this.level*1.15);
+    this.kika=this.add.image(this.kikaX,this.kikaY,'kika').setDisplaySize(size,size).setDepth(11).setInteractive({useHandCursor:true});
+    this.kika.setAngle(rng.integerInRange(-13,13));
+    this.kika.on('pointerup',()=>this.onFound());
+
+    // Distractores tipo golden en niveles más altos.
+    const decoys=this.level<8?0:this.level<18?1:2;
+    for(let i=0;i<decoys;i++){
+      let x=rng.integerInRange(45,385),y=rng.integerInRange(155,720);
+      if(Math.abs(x-this.kikaX)<70 && Math.abs(y-this.kikaY)<70){x=(x+150)%360+35;y=(y+180)%540+155}
+      const dog=this.add.image(x,y,'kika').setDisplaySize(size*rng.realInRange(.78,1.12),size*rng.realInRange(.78,1.12)).setDepth(rng.integerInRange(5,10)).setAngle(rng.integerInRange(-20,20));
+      dog.setTint([0xe6b26a,0xd5a04f,0xf0c988][i%3]);dog.setAlpha(.93);
+    }
+
+    // Objetos delante de Kika: ocultan partes de su cuerpo y vuelven la búsqueda mucho más difícil.
+    addForegroundClutter(this,{count:Math.min(31,8+Math.floor(this.level*.8)),seed:this.level*613+9,depthMin:12,depthMax:18});
+
     this.drawBottomBar();
     this.countdown=this.time.addEvent({delay:1000,loop:true,callback:()=>{if(this.found)return;this.timeLeft--;this.timerText.setText(this.formatTime(this.timeLeft));if(this.timeLeft<=0)this.onLose()}});
   }
-  spawnSticker(i){
-    const x=Phaser.Math.Between(18,412),y=Phaser.Math.Between(135,750),size=Phaser.Math.Between(22,40),emoji=stickerEmojis[i%stickerEmojis.length];
-    const c=this.add.container(x,y).setDepth(Phaser.Math.Between(2,9));const g=this.add.graphics();g.fillStyle(0xffffff,.94);g.fillCircle(0,0,size*.7);g.lineStyle(2,0xb78e60,.65);g.strokeCircle(0,0,size*.7);g.fillStyle(0xffffff,.28);g.fillCircle(-size*.18,-size*.2,size*.22);const t=this.add.text(0,0,emoji,{fontSize:`${size}px`}).setOrigin(.5);c.add([g,t]);c.setAngle(Phaser.Math.Between(-24,24));
-  }
   drawBottomBar(){
-    const g=this.add.graphics().setDepth(30);g.fillStyle(0xefd9b4,.98);g.fillRect(0,770,430,162);g.lineStyle(3,0xa46f3e,.8);g.lineBetween(0,770,430,770);g.fillStyle(0xffffff,.22);g.fillRect(0,774,430,12);
+    const g=this.add.graphics().setDepth(50);g.fillStyle(0xefd9b4,.99);g.fillRect(0,770,430,162);g.lineStyle(3,0xa46f3e,.8);g.lineBetween(0,770,430,770);g.fillStyle(0xffffff,.22);g.fillRect(0,774,430,12);
     const defs=[['🔎',105,'magnifier'],['💡',215,'bulb'],['⏱️',325,'clock']];
-    defs.forEach(([icon,x,key])=>{const amt=this.save.inventory[key]||0;const sh=this.add.circle(x,846,45,0x000000,.14).setDepth(31);const c=this.add.circle(x,841,43,0xfff8ea).setStrokeStyle(3,0xb3844d).setDepth(32).setInteractive({useHandCursor:true});this.add.text(x,841,icon,{fontSize:'39px'}).setOrigin(.5).setDepth(33);this.add.circle(x+31,808,14,C.green).setDepth(34);this.add.text(x+31,808,String(amt),{fontFamily:'Arial Black',fontSize:'13px',color:'#fff'}).setOrigin(.5).setDepth(35);c.on('pointerup',()=>this.usePower(key));});
-    this.add.text(215,908,'Usa una ayuda si Kika está muy escondida',{fontFamily:'Arial Black',fontSize:'11px',color:'#6a4a33'}).setOrigin(.5).setDepth(33);
+    defs.forEach(([icon,x,key])=>{const amt=this.save.inventory[key]||0;this.add.circle(x,846,45,0x000000,.14).setDepth(51);const c=this.add.circle(x,841,43,0xfff8ea).setStrokeStyle(3,0xb3844d).setDepth(52).setInteractive({useHandCursor:true});this.add.text(x,841,icon,{fontSize:'39px'}).setOrigin(.5).setDepth(53);this.add.circle(x+31,808,14,C.green).setDepth(54);this.add.text(x+31,808,String(amt),{fontFamily:'Arial Black',fontSize:'13px',color:'#fff'}).setOrigin(.5).setDepth(55);c.on('pointerup',()=>this.usePower(key));});
+    this.add.text(215,908,'Mira entre muebles, juguetes y objetos',{fontFamily:'Arial Black',fontSize:'11px',color:'#6a4a33'}).setOrigin(.5).setDepth(53);
   }
   usePower(key){
     if(this.found||(this.save.inventory[key]||0)<=0)return;this.save.inventory[key]--;saveGame(this.save);
-    if(key==='magnifier'){const ring=this.add.circle(this.kikaX,this.kikaY,88,0xffdc55,.08).setStrokeStyle(7,0xffd737,1).setDepth(40);this.tweens.add({targets:ring,scale:1.35,alpha:0,duration:1600,onComplete:()=>ring.destroy()});}
-    if(key==='bulb'){const shade=this.add.rectangle(215,442,430,650,0x000000,.58).setDepth(38);const ring=this.add.circle(this.kikaX,this.kikaY,85,0xffffff,0).setStrokeStyle(6,0xffe05f,1).setDepth(40);this.kika.setDepth(41);this.time.delayedCall(1500,()=>{shade.destroy();ring.destroy();this.kika.setDepth(6)})}
+    if(key==='magnifier'){const ring=this.add.circle(this.kikaX,this.kikaY,72,0xffdc55,.08).setStrokeStyle(7,0xffd737,1).setDepth(70);this.tweens.add({targets:ring,scale:1.45,alpha:0,duration:1600,onComplete:()=>ring.destroy()});}
+    if(key==='bulb'){const shade=this.add.rectangle(215,442,430,650,0x000000,.58).setDepth(68);const ring=this.add.circle(this.kikaX,this.kikaY,70,0xffffff,0).setStrokeStyle(6,0xffe05f,1).setDepth(70);this.kika.setDepth(71);this.time.delayedCall(1500,()=>{shade.destroy();ring.destroy();this.kika.setDepth(11)})}
     if(key==='clock'){this.timeLeft+=15;this.timerText.setText(this.formatTime(this.timeLeft));}
   }
   onFound(){
-    if(this.found)return;this.found=true;this.countdown.remove(false);this.kika.setDepth(50);this.tweens.add({targets:this.kika,scale:1.18,duration:180,yoyo:true,repeat:2});
-    const stars=this.timeLeft>52?3:this.timeLeft>25?2:1,reward=stars*20;this.save.coins+=reward;this.save.stars[this.level]=Math.max(this.save.stars[this.level]||0,stars);this.save.best[this.level]=Math.max(this.save.best[this.level]||0,this.timeLeft);this.save.unlocked=Math.min(30,Math.max(this.save.unlocked,this.level+1));saveGame(this.save);this.time.delayedCall(450,()=>this.showWin(stars,reward));
+    if(this.found)return;this.found=true;if(this.countdown)this.countdown.remove();
+    const max=Math.max(28,96-Math.floor((this.level-1)*1.55));const ratio=this.timeLeft/max;const stars=ratio>.62?3:ratio>.3?2:1;
+    this.save.stars[this.level]=Math.max(this.save.stars[this.level]||0,stars);this.save.unlocked=Math.max(this.save.unlocked,Math.min(30,this.level+1));this.save.coins+=stars*25;saveGame(this.save);
+    const shade=this.add.rectangle(215,466,430,932,0x21140d,.72).setDepth(90);const p=panel(this,215,476,350,430,0x4b301e,0xdda64e,91,28);
+    this.add.text(215,335,'¡ENCONTRASTE\nA KIKA!',{fontFamily:'Arial Black',fontSize:'34px',align:'center',color:'#ffd245',stroke:'#6f3507',strokeThickness:6}).setOrigin(.5).setDepth(93);
+    this.add.circle(215,475,90,0xf2a900,.95).setDepth(93);this.add.circle(215,475,76,0xffdd65,1).setDepth(94);this.add.image(215,475,'kika').setDisplaySize(135,135).setDepth(95);
+    this.add.text(215,595,'★'.repeat(stars)+'☆'.repeat(3-stars),{fontFamily:'Arial Black',fontSize:'56px',color:'#ffbd12',stroke:'#8b4b00',strokeThickness:4}).setOrigin(.5).setDepth(95);
+    this.add.text(215,645,`+${stars*25} monedas`,{fontFamily:'Arial Black',fontSize:'17px',color:'#fff2c6'}).setOrigin(.5).setDepth(95);
+    roundedButton(this,215,705,246,58,this.level<30?'SIGUIENTE NIVEL':'VOLVER A NIVELES',C.green,C.greenDark,()=>this.scene.start(this.level<30?'Game':'Levels',this.level<30?{level:this.level+1}:undefined),{depth:96,fontSize:18});
   }
-  showWin(stars,reward){
-    this.add.rectangle(215,466,430,932,0x17100b,.72).setDepth(60);const g=this.add.graphics().setDepth(61);g.fillStyle(0x3b281b,.98);g.fillRoundedRect(27,150,376,610,30);g.lineStyle(4,0xf2b72d);g.strokeRoundedRect(27,150,376,610,30);g.fillStyle(0xffffff,.06);g.fillRoundedRect(34,157,362,33,23);
-    this.add.text(215,220,'¡ENCONTRASTE\nA KIKA!',{fontFamily:'Arial Black',fontSize:'37px',color:'#ffd33b',align:'center',stroke:'#693400',strokeThickness:7}).setOrigin(.5).setDepth(62);
-    const glow=this.add.circle(215,390,103,0xffc528,.22).setDepth(62);this.add.circle(215,390,88,0xffc528,.18).setStrokeStyle(6,0xffc528).setDepth(63);this.add.image(215,390,'kika').setDisplaySize(175,175).setDepth(64);
-    this.add.text(215,522,'★'.repeat(stars)+'☆'.repeat(3-stars),{fontFamily:'Arial Black',fontSize:'56px',color:'#ffbf17',stroke:'#7a4100',strokeThickness:4}).setOrigin(.5).setDepth(64);
-    this.add.text(215,575,`+ ${reward} monedas`,{fontFamily:'Arial Black',fontSize:'20px',color:'#fff5d4'}).setOrigin(.5).setDepth(64);
-    roundedButton(this,215,648,260,58,'SIGUIENTE NIVEL',C.green,C.greenDark,()=>this.scene.start('Game',{level:Math.min(30,this.level+1)}),{depth:64,fontSize:20});
-    roundedButton(this,215,712,260,46,'VOLVER A NIVELES',C.blue,C.blueDark,()=>this.scene.start('Levels'),{depth:64,fontSize:15});
-  }
-  onLose(){
-    if(this.found)return;this.found=true;this.countdown.remove(false);this.add.rectangle(215,466,430,932,0x140e0a,.72).setDepth(60);panel(this,215,430,340,270,0x3d291c,0xe6ad4e,61,28);this.add.text(215,355,'¡SE ACABÓ\nEL TIEMPO!',{fontFamily:'Arial Black',fontSize:'34px',color:'#ffd257',align:'center',stroke:'#552c08',strokeThickness:5}).setOrigin(.5).setDepth(64);this.add.text(215,440,'Kika estaba muy bien escondida 🐾',{fontFamily:'Arial Black',fontSize:'14px',color:'#fff4db'}).setOrigin(.5).setDepth(64);roundedButton(this,215,520,230,58,'REINTENTAR',C.yellow,C.yellowDark,()=>this.scene.restart({level:this.level}),{depth:64,fontSize:20});
-  }
-  formatTime(v){v=Math.max(0,v);return `${String(Math.floor(v/60)).padStart(2,'0')}:${String(v%60).padStart(2,'0')}`}
+  onLose(){if(this.found)return;this.found=true;if(this.countdown)this.countdown.remove();const sh=this.add.rectangle(215,466,430,932,0x21140d,.72).setDepth(90);panel(this,215,475,345,300,0x4b301e,0xdda64e,91,28);this.add.text(215,400,'¡SE ACABÓ EL TIEMPO!',{fontFamily:'Arial Black',fontSize:'25px',color:'#ffd05a',stroke:'#6f3507',strokeThickness:4}).setOrigin(.5).setDepth(94);this.add.text(215,457,'Kika estaba muy bien escondida 🐾',{fontFamily:'Arial Black',fontSize:'14px',color:'#fff',align:'center',wordWrap:{width:280}}).setOrigin(.5).setDepth(94);roundedButton(this,215,540,235,58,'INTENTAR OTRA VEZ',C.orange,0xa84c17,()=>this.scene.restart({level:this.level}),{depth:95,fontSize:16});}
+  formatTime(v){const m=Math.floor(v/60),s=v%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
 }
 
 export class ShopScene extends Phaser.Scene{
