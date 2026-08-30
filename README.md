@@ -1,33 +1,32 @@
-# Where is Kika? — Phaser + Capacitor
+# Where is Kika? — Phaser + Capacitor v6
 
-Versión visual renovada del juego de búsqueda de Kika.
+Versión visual renovada del juego móvil de búsqueda de Kika.
 
-## Cambios principales de esta actualización
-- Menú principal rehecho con arte del propio juego a pantalla completa.
-- Interfaz más cercana al mockup original: paneles marrón/dorado, botones con volumen, HUD compacto y barra inferior.
-- Se eliminaron los emojis/stickers de la navegación principal y se sustituyeron por iconos vectoriales dibujados en Phaser.
-- Selector de escenarios con preview real de los niveles.
-- Pantalla de niveles completamente rediseñada.
-- HUD del nivel con pausa, reloj y nivel en cápsulas.
-- Botones de pistas rediseñados como controles circulares de juego.
-- Tienda y récords actualizados al mismo lenguaje visual.
-- Los niveles siguen usando ilustraciones completas WebP, no composiciones de stickers.
+## Cambios v6
+- Menú rediseñado para usar la ilustración completa como protagonista, sin sticker flotante de Kika.
+- Pantallas de escenarios y niveles más cercanas al mockup original.
+- HUD del juego rehecho con barra superior y dock inferior más integrados al arte.
+- Pantalla de victoria usa un retrato recortado desde el arte ilustrado, no el SVG tipo sticker anterior.
+- Botones, paneles, sombras, bordes y navegación rehechos con un lenguaje visual más premium.
+- Mantiene Phaser + Vite + Capacitor y guardado local.
 
-## Ejecutar
+## Probar
 ```bash
 npm install
 npm run dev
 ```
 
-## Vercel
-Vercel detecta Vite automáticamente. Si pide configuración:
-- Build Command: `npm run build`
-- Output Directory: `dist`
+## Build web
+```bash
+npm run build
+```
 
 ## Capacitor
 ```bash
-npm run build
+npm run cap:sync
 npx cap add ios
 npx cap add android
-npm run cap:sync
 ```
+
+## Vercel
+Vercel puede detectar Vite automáticamente. El directorio de salida es `dist`.
